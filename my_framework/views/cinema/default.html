@@ -1,0 +1,18 @@
+<div class="container">
+  <main class="row content text-center">
+<h1 class="table_name">Cinema</h1>
+{{empty_result}}
+    <form action="{{url}}" method="post" class="search">
+      {{errorfind}}
+          <input type="text" name="titre" class="form-control" placeholder="Titre">
+          <input type="text" name="genre" class="form-control" placeholder="Genre">
+          <input type="text" name="distrib" class="form-control" placeholder="Distributeur">
+          <input type="submit" class="btn btn-success">
+      </form>
+<ul class="list-inline center-block text-center">
+{{data_loop}}
+</ul>
+</main>
+</div>
+</body>
+</html>

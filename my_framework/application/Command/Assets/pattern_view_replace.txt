@@ -1,0 +1,13 @@
+<div class="container">
+  <main class="row content text-center">
+<h1 class="table_name">[{class_uc}]</h1>
+{{empty_result}}
+{{result_fail}}
+{{result_add}}
+<ul class="list-inline center-block text-center" id="data">
+{{data_loop}}
+</ul>
+</main>
+</div>
+</body>
+</html>

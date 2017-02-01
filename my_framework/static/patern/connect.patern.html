@@ -1,0 +1,26 @@
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="[{path}]">My Framework</a></li>
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#">My Cinema <b class="caret"></b></a>
+          <ul class="listnavfile dropdown-menu">
+            <li><a href="[{path}]cinema">Film</a></li>
+            <li><a href="[{path}]cinema/abonnement">Abonnement</a></li>
+            <li><a href="[{path}]cinema/reduction">Reduction</a></li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+          <a class="dropdown-toggle login" data-toggle="dropdown" href="#">
+          [{name}] <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><form class="formdeco" action="[{path}]registration/disconnect" method="post">
+                <button class="btndeco">Déconnexion</button>
+              </form>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>

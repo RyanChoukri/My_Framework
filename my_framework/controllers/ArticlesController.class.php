@@ -1,0 +1,269 @@
+<?php
+namespace MyFramework;
+
+class ArticlesController extends ArticlesModel
+{
+    public function defaultAction()
+    {
+        $this->isLogged();
+        $list = ['articles/get'     => 'Liste de la table Articles',
+                 'articles/add'     => 'Ajouter dans la table Articles',
+                 'articles/replace' => 'Remplacer dans la table Articles',
+                 'articles/remove'  => 'Suprimer dans la table Articles'];
+        $link = "";
+        foreach ($list as $key => $value) {
+            $link .= "<p><a href='/" . BASE_URI . "/" . $key ."'>".
+            $value . "</a></p>";
+        }
+        $data['data_loop'] = $link;
+        $this->render($data);
+    }
+
+    public function addAction()
+    {
+       $this->isAdmin();
+        $html = "";
+        $row = "";
+        $entry = [];
+        if(!empty($_POST)) {
+            foreach ($_POST as $key => $value) {
+                if(trim($value) != "") {
+                    $entry[$key] = trim($value);
+                }
+            }
+            if($this->add($entry)) {
+                $data['result_add'] = "<p>Entrée ajouté a la " .
+                "Base de Donnée</p>";
+            }
+            else {
+                $data['result_fail'] = "<p>Entrée non ajouté a " .
+                "la Base de Donnée</p>";
+            }
+        }
+        $html .= '<form action="' . $_SERVER['REQUEST_URI'] .
+        '" method="post">';
+        foreach ($this->getTable() as $all_key => $all_value) {
+            if($all_value['Key'] != 'PRI') {
+                $row .= '<p>' . $all_value['Field'] . ' <span>';
+                $row .= '<input type="text" name="' . $all_value['Field'] .
+                '"></span></p>';
+            }
+        }
+        $html .=  $row . '<button type="submit">Envoyé</button></form>';
+        $data['data_loop'] = $html;
+        $this->render($data);
+    }
+
+    public function getAction()
+    {
+        $this->isLogged();
+        $raw = "";
+        if(empty($this->getAll())) {
+            $data['empty_result'] = '<p>Aucun résulat trouvé</p>';
+            $this->render($data);
+            return;
+        }
+        foreach ($this->getAll() as $all_key => $all_value) {
+            $row = "";
+
+            $raw .= '<li class="current_data text-center">';
+            $status = true;
+            foreach ($all_value as $row_key => $row_value) {
+                if(!$status) {
+                    $row .= "<h2 class='col_table'>" . $row_key .
+                    "</h2>" . PHP_EOL;
+                    $row .= "<p>" . htmlentities($row_value, ENT_QUOTES) .
+                    "</p>". PHP_EOL;
+                }
+                $status = false;
+            }
+            $raw .= $row . "</li>" . PHP_EOL;   
+        }
+        $data['data_loop'] = $raw;
+        $this->render($data);
+    }
+                    
+    public function replaceAction()
+    {
+        $this->isAdmin();
+        $raw = "";
+        if(!empty($_POST)) {
+            foreach ($_POST as $key => $value) {
+                if(trim($value) != "") {
+                    $entry[$key] = trim($value);
+                }
+            }
+            if($this->replace($entry)) {
+                $data['result_add'] = "<p>Entrée modifier dans la " .
+                "Base de Donnée</p>";
+            }
+            else {
+                $data['result_fail'] = "<p>Entrée non modifier dans " .
+                "la Base de Donnée</p>";
+            }
+        }
+
+        if(empty($this->getAll())) {
+            $data['empty_result'] = '<p>Aucun résulat trouvé</p>';
+            $this->render($data);
+            return;
+        }
+        foreach ($this->getAll() as $all_key => $all_value) {
+        $row = "";
+        $raw .= '<li class="text-center">';
+        $status = true;
+        foreach ($all_value as $row_key => $row_value) {
+            if($status) {
+                    $row .= "<div class='current_data' id='" . $row_value . "'>";
+                    $button = '<button id="' . $row_value .
+                    'modif" class="btn btn-success ajax_r" name="' . $row_key . '" value="' .
+                    htmlentities($row_value) .
+                    '">Modifier</button></div></li>';
+                    $status = false;
+                }
+                else {
+                    $row .= "<h2 class='col_table'>" . $row_key . "</h2>" . PHP_EOL;
+                    $row .= "<p><input type='text' value='" . htmlentities($row_value, ENT_QUOTES) .
+                    "' name='" . $row_key . "'></p>". PHP_EOL; 
+                }
+            }
+            $raw .= $row . $button . PHP_EOL;
+        }
+        $data['data_loop'] = $raw;
+        $this->render($data);
+    }
+
+    public function removeAction()
+    {
+        $this->isAdmin();
+        if(!empty($_POST)) {
+            if(is_numeric(current($_POST))) {
+                $entry[key($_POST)] = trim(current($_POST));
+            }
+            if($this->remove($entry)) {
+                $data['remove'] = "<p>Entrée suprimé de la " .
+                "Base de Donnée</p>";
+            }
+            else {
+                $data['remove_fail'] = "<p>Entrée non suprimé de " .
+                "la Base de Donnée</p>";
+            }
+        }
+
+        $raw = "";
+        if(empty($this->getAll())) {
+            $data['empty_result'] = '<p>Aucun résulat trouvé</p>';
+            $this->render($data);
+            return;
+        }
+
+        foreach ($this->getAll() as $all_key => $all_value) {
+            $row = "";
+            $raw .= '<li class="text-center">';
+            $status = true;
+            foreach ($all_value as $row_key => $row_value) {
+                if($status) {
+/*                    $raw_form = '<form action="' . $_SERVER['REQUEST_URI'] .
+                    '" method="post"><button class="btn btn-danger" ' .
+                    'type="submit" name="' .
+                    $row_key . '" value="' . $row_value;
+                    $status = false;*/
+
+                    $row .= "<div class='current_data' id='" . $row_value . "'>";
+                    $button = '<button id="' . $row_value .
+                    'remove" class="btn btn-danger ajax_d" name="' . $row_key . '" value="' .
+                    htmlentities($row_value) .
+                    '">Suprimer</button></div></li>';
+                    $status = false;
+                }
+                else {
+                    $row .= "<h2 class='col_table'>" . $row_key . "</h2>" . PHP_EOL;
+                    $row .= "<p>" . htmlentities($row_value, ENT_QUOTES) .
+                    "</p>". PHP_EOL; 
+                }
+            }
+            $raw .= $row . $button . PHP_EOL;
+        }
+        $data['data_loop'] = $raw;
+        $this->render($data);
+    }
+
+    public function remove_partialAction()
+    {
+        if(empty($_POST['id'])) {
+            return false;
+        }
+        $id = json_decode($_POST['id'], true);
+        if($this->remove($id)) {
+            $raw = "";
+            if(empty($this->getAll())) {
+                echo '<p>Aucun résulat trouvé</p>';
+            }
+
+            foreach ($this->getAll() as $all_key => $all_value) {
+                $row = "";
+                $raw .= '<li class="text-center">';
+                $status = true;
+                foreach ($all_value as $row_key => $row_value) {
+                    if($status) {
+                    $row .= "<div class='current_data' id='" . $row_value . "'>";
+                    $button = '<button id="' . $row_value .
+                    'remove" class="btn btn-danger ajax_d" name="' . $row_key . '" value="' .
+                    htmlentities($row_value) .
+                    '">Suprimer</button></div></li>';
+                    $status = false;
+                    }
+                    else {
+                        $row .= "<h2 class='col_table'>" . $row_key . "</h2>" . PHP_EOL;
+                    $row .= "<p>" . htmlentities($row_value, ENT_QUOTES) .
+                    "</p>". PHP_EOL; 
+                    }
+                }
+                $raw .= $row . $button . PHP_EOL;
+            }
+            echo $raw;
+        }
+    }
+
+    public function replace_partialAction()
+    {
+        if(empty($_POST['input']) && empty($_POST['id'])) {
+            return false;
+        }
+        $input = json_decode($_POST['input'], true);
+        $id = json_decode($_POST['id'], true);
+        $replace = array_merge($input, $id);
+
+        if($this->replace($replace)) {
+            $raw = "";
+            if(empty($this->getAll())) {
+                echo '<p>Aucun résulat trouvé</p>';
+                return;
+            }
+
+            foreach ($this->getAll() as $all_key => $all_value) {
+                $row = "";
+                $raw .= '<li class="text-center">';
+                $status = true;
+                foreach ($all_value as $row_key => $row_value) {
+                    if($status) {
+                        $row .= "<div class='current_data'  id='" . $row_value . "'>";
+                        $button = '<button id="' . $row_value .
+                        'modif" class="btn btn-success ajax_r" name="' . $row_key . '" value="' .
+                        htmlentities($row_value) .
+                        '">Modifier</button></div></li>';
+                        $status = false;
+                    }
+                    else {
+                        $row .= "<h2 class='col_table'>" . $row_key . "</h2>" . PHP_EOL;
+                        $row .= "<p><input type='text' value='" . htmlentities($row_value, ENT_QUOTES) .
+                        "' name='" . $row_key . "'></p>". PHP_EOL; 
+                    }
+                }
+                $raw .= $row . $button . PHP_EOL;
+            }
+            echo $raw;
+        }
+    }
+}
+?>
